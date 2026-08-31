@@ -34,6 +34,8 @@ A fonte, as principais características e o motivo da escolha do dataset estão 
 │   ├── main.py                          # ponto de entrada da aplicação
 │   ├── requirements.txt                 # dependências da API
 │   ├── .env.example                     # modelo de variáveis de ambiente
+│   ├── Dockerfile                       # imagem da API
+│   ├── compose.yml                      # orquestração via Docker Compose
 │   ├── models/
 │   │   └── schemas.py                   # modelos Pydantic (request/response)
 │   ├── routes/
@@ -53,7 +55,7 @@ A fonte, as principais características e o motivo da escolha do dataset estão 
 
 ```bash
 # Clonar o repositório
-git clone https://github.com/Phoenix7290/Caua-Guilherme-Gustavo-Marcos.git
+git clone https://github.com/Phoenix7290/Caua_Guilherme_Gustavo_Marcos.git
 cd Caua-Guilherme-Gustavo-Marcos/fastapi
 
 # Criar e ativar o ambiente virtual
