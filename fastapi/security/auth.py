@@ -6,8 +6,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 # ── Configurações ────────────────────────────────────────────────────────
-SECRET_KEY = "supersecretkey-troque-em-producao"
+SECRET_KEY = os.getenv("SECRET_KEY", "chave-fallback-so-para-dev-local")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

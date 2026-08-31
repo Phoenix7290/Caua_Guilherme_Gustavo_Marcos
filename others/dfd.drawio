@@ -1,0 +1,96 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36" version="29.2.7">
+  <diagram name="DFD - Customer Support Intent API" id="dfd-page-1">
+    <mxGraphModel dx="1385" dy="1112" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="950" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1;" value="DFD - Customer Support Intent API&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Entradas, saidas, trust boundaries e triade CIA por componente&lt;/font&gt;" vertex="1">
+          <mxGeometry height="50" width="480" x="360" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="cliente" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBD0;strokeColor=#B9770E;fontSize=11;" value="Cliente / App&lt;br&gt;(usuario final)&lt;br&gt;&lt;br&gt;&lt;b&gt;CIA:&lt;/b&gt; I - envia texto&lt;br&gt;integro do ticket" vertex="1">
+          <mxGeometry height="90" width="220" x="470" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="bound1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#B03A2E;fontColor=#B03A2E;verticalAlign=top;align=center;spacingLeft=8;spacingTop=4;fontSize=11;fontStyle=2;" value="Trust Boundary 1: Internet &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;pública &amp;lt;-&amp;gt; Borda (Cloudflare)" vertex="1">
+          <mxGeometry height="150" width="400" x="380" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudflare" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9E79F;strokeColor=#B7950B;fontSize=11;" value="Cloudflare Tunnel&lt;br&gt;(reverse proxy / TLS)&lt;br&gt;&lt;br&gt;&lt;b&gt;CIA:&lt;/b&gt; C (TLS em transito)&lt;br&gt;I (anti-tampering)&lt;br&gt;A (borda redundante)" vertex="1">
+          <mxGeometry height="90" width="220" x="470" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="bound2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#1F618D;fontColor=#1F618D;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontSize=11;fontStyle=2;" value="Trust Boundary 2: Borda &amp;lt;-&amp;gt; Raspberry Pi&amp;nbsp;&lt;div&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; (rede local / dispositivo)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="480" width="1080" x="60" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="apicluster" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#154360;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontSize=11;fontStyle=2;" value="FastAPI App (main.py)" vertex="1">
+          <mxGeometry height="220" width="680" x="100" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="health" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#1E8449;fontSize=11;" value="GET /health&lt;br&gt;&lt;br&gt;&lt;b&gt;CIA:&lt;/b&gt; A - prova de&lt;br&gt;disponibilidade" vertex="1">
+          <mxGeometry height="100" width="190" x="130" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="authroute" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2471A3;fontSize=11;" value="POST /auth/token&lt;br&gt;&lt;br&gt;&lt;b&gt;CIA:&lt;/b&gt; C (credenciais)&lt;br&gt;I (emissao correta&lt;br&gt;do token)" vertex="1">
+          <mxGeometry height="100" width="200" x="350" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="predict" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FADBD8;strokeColor=#C0392B;fontSize=11;" value="POST /predict&lt;br&gt;(protegida por JWT)&lt;br&gt;&lt;br&gt;&lt;b&gt;CIA:&lt;/b&gt; C (exige token&lt;br&gt;valido) I (classificacao&lt;br&gt;integra) A" vertex="1">
+          <mxGeometry height="120" width="180" x="580" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="bound3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 2;fillColor=none;strokeColor=#7D3C98;fontColor=#7D3C98;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontSize=11;fontStyle=2;" value="Trust Boundary 3: rotas publicas &lt;-&gt; autenticadas" vertex="1">
+          <mxGeometry height="280" width="280" x="820" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="jwt" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#E8DAEF;strokeColor=#7D3C98;fontSize=11;boundedLbl=1;" value="JWT + SECRET_KEY&lt;br&gt;(.env)&lt;br&gt;Admin hardcoded&lt;br&gt;(username / hash)&lt;br&gt;&lt;br&gt;&lt;b&gt;CIA:&lt;/b&gt; C maxima&lt;br&gt;(chave de assinatura)&lt;br&gt;I - nao pode ser forjado" vertex="1">
+          <mxGeometry height="180" width="220" x="850" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="resposta" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBD0;strokeColor=#B9770E;fontSize=11;" value="Resposta JSON&lt;br&gt;(status / token / intencao)&lt;br&gt;&lt;br&gt;&lt;b&gt;CIA:&lt;/b&gt; I - integridade&lt;br&gt;da resposta" vertex="1">
+          <mxGeometry height="90" width="220" x="470" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="cliente" style="html=1;fontSize=9;endArrow=block;" target="cloudflare" value="HTTPS request">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="cloudflare" style="html=1;fontSize=9;endArrow=block;" target="health" value="GET">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="cloudflare" style="html=1;fontSize=9;endArrow=block;" target="authroute" value="POST user+pass">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="cloudflare" style="html=1;fontSize=9;endArrow=block;" target="predict" value="POST + Bearer token">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="authroute" style="html=1;fontSize=9;endArrow=block;dashed=1;exitX=0.993;exitY=0.96;exitDx=0;exitDy=0;exitPerimeter=0;entryX=-0.005;entryY=0.831;entryDx=0;entryDy=0;entryPerimeter=0;" target="jwt" value="valida e assina">
+          <mxGeometry relative="1" x="0.215" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="549" y="650" />
+            </Array>
+            <mxPoint x="532.6" y="642.69" as="sourcePoint" />
+            <mxPoint x="840" y="637.3138140872065" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" style="html=1;fontSize=9;endArrow=block;dashed=1;entryX=0.003;entryY=0.55;entryDx=0;entryDy=0;entryPerimeter=0;" target="jwt" value="valida token">
+          <mxGeometry relative="1" x="0.1032" y="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="790" y="600" />
+            </Array>
+            <mxPoint x="760" y="600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="health" style="html=1;fontSize=9;endArrow=block;" target="resposta">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="authroute" style="html=1;fontSize=9;endArrow=block;" target="resposta">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="predict" style="html=1;fontSize=9;endArrow=block;" target="resposta">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="resposta" style="html=1;fontSize=9;endArrow=block;dashed=1;exitX=0;exitY=0.5;entryX=-0.002;entryY=0.456;entryDx=0;entryDy=0;entryPerimeter=0;" target="cloudflare" value="HTTPS response">
+          <mxGeometry relative="1" x="-0.3321" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="340" y="785" />
+              <mxPoint x="340" y="281" />
+            </Array>
+            <mxPoint x="450" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

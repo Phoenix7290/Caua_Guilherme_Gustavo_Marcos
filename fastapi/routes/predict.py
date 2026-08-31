@@ -23,7 +23,7 @@ def _classify(text: str):
     return "Product Inquiry", 0.60   
 
 
-@router.post("/", response_model=PredictResponse)
+@router.post("", response_model=PredictResponse)
 def predict(
     body: PredictRequest,
     current_user: str = Depends(get_current_user),
