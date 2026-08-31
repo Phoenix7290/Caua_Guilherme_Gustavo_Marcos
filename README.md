@@ -66,13 +66,18 @@ A API sobe em `http://localhost:8000`. A documentação interativa (Swagger) fic
 
 ## Self Hosting
 
+Requer Docker e Docker Compose instalados.
+
 A partir do diretório `fastapi/`:
 
 ```bash
+cp .env.example .env
+# edite o .env e defina o SECRET_KEY
+
 docker compose up -d --build
 ```
 
-Nota: Possua o Docker Compose disponível. A API também sobre em `http://localhost:8000`.
+A API sobe em `http://localhost:8000`.
 
 ## Autenticação
 
