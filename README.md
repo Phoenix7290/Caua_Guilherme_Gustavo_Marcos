@@ -56,7 +56,7 @@ A fonte, as principais características e o motivo da escolha do dataset estão 
 ```bash
 # Clonar o repositório
 git clone https://github.com/Phoenix7290/Caua_Guilherme_Gustavo_Marcos.git
-cd Caua-Guilherme-Gustavo-Marcos/fastapi
+cd Caua_Guilherme_Gustavo_Marcos/fastapi
 
 # Criar e ativar o ambiente virtual
 python3 -m venv .venv
@@ -91,6 +91,31 @@ uvicorn main:app --reload
 ```
 
 A API sobe em `http://localhost:8000`. A documentação interativa (Swagger) fica em `http://localhost:8000/docs`.
+
+## Ambiente publicado
+
+A API também está disponível publicamente (hospedada em um Raspberry Pi 5, exposta via Cloudflare Tunnel):
+
+**URL base:** https://supportdesk-api.marcosryan.com
+
+Documentação interativa (Swagger): https://supportdesk-api.marcosryan.com/docs
+
+### Testando
+
+```bash
+# Health check
+curl https://supportdesk-api.marcosryan.com/health
+
+# Autenticação (retorna um token JWT válido por 15 minutos)
+curl -X POST https://supportdesk-api.marcosryan.com/auth/token \
+  -d "username=admin&password=admin123"
+
+# Predição (substitua <TOKEN> pelo access_token retornado acima)
+curl -X POST https://supportdesk-api.marcosryan.com/predict \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "meu produto parou de funcionar"}'
+```
 
 ## Self Hosting
 
