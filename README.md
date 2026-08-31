@@ -1,16 +1,26 @@
-# Customer Support Intent API
+# Sistema de Atendimento ao Cliente com IA
 
-TP1 do Projeto de Bloco — Análise e Segurança de Agentes de IA
+Projeto de Bloco de Análise e Segurança de Agentes de IA
 
 ## Objetivo do projeto
 
-Construir a base de um sistema de atendimento ao cliente com inteligência artificial. Este TP cobre as duas primeiras etapas: a análise exploratória do dataset que vai alimentar o futuro modelo de classificação e a estrutura da API que vai servir esse sistema, já com autenticação JWT funcional. `Ticket Type` e `Ticket Subject` são as variáveis-alvo da classificação de intenção; o modelo de machine learning propriamente dito será implementado em uma etapa futura do bloco — por enquanto, a rota `/predict` retorna uma classificação simulada por regras.
+Desenvolver um sistema capaz de classificar a intenção de chamados de suporte a partir dos dados enviados pelo cliente. `Ticket Type` e `Ticket Subject` serão as variáveis-alvo da classificação, e o sistema será disponibilizado por uma API FastAPI modular e protegida por autenticação JWT.
+
+## Escopo do projeto
+
+- Análise exploratória: compreensão do problema e do dataset, inspeção inicial, verificação da qualidade, limpeza, preparação e análise univariada.
+- Formulação de hipóteses sobre as intenções dos usuários a partir das distribuições observadas.
+- API FastAPI modular com as rotas `GET /health`, `POST /auth/token` e `POST /predict`.
+- Autenticação JWT com `OAuth2PasswordBearer` e proteção da rota de predição.
+- Diagrama de fluxo de dados com entradas, saídas e limites de confiança, acompanhado da análise de confidencialidade, integridade e disponibilidade.
 
 ## Dataset
 
-**Customer Support Ticket Dataset** ([Kaggle](https://www.kaggle.com/datasets/suraj520/customer-support-ticket-dataset/data)) — 8.469 chamados de suporte técnico, 17 colunas, incluindo dados do cliente, produto, descrição do problema, tipo/assunto do chamado, prioridade, canal, status e, quando aplicável, tempo de resposta/resolução e satisfação.
+- **Nome:** Customer Support Ticket Dataset
+- **Fonte:** [Customer Support Ticket Dataset no Kaggle](https://www.kaggle.com/datasets/suraj520/customer-support-ticket-dataset/data), publicado por `suraj520`
+- **Conteúdo:** 8.469 chamados de suporte e 17 colunas com informações sobre clientes, produtos, chamados e atendimento.
 
-A documentação completa (fonte, características, motivo da escolha) e a análise exploratória (inspeção inicial, verificação de qualidade, limpeza, análise univariada e hipóteses sobre a intenção dos usuários) estão em [`eda/eda.ipynb`](eda/eda.ipynb).
+A fonte, as principais características e o motivo da escolha do dataset estão detalhados no início do notebook [`eda/eda.ipynb`](eda/eda.ipynb).
 
 ## Estrutura de pastas
 
@@ -42,12 +52,16 @@ A documentação completa (fonte, características, motivo da escolha) e a anál
 ## Instalação
 
 ```bash
+# Clonar o repositório
 git clone https://github.com/Phoenix7290/Caua-Guilherme-Gustavo-Marcos.git
 cd Caua-Guilherme-Gustavo-Marcos/fastapi
 
-python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+# Criar e ativar o ambiente virtual
+python3 -m venv .venv
+source .venv/bin/activate        # Linux/macOS
+# .venv\Scripts\activate         # Windows
 
+# Instalar as dependências
 pip install -r requirements.txt
 
 cp .env.example .env
@@ -55,6 +69,18 @@ cp .env.example .env
 ```
 
 ## Execução
+
+### EDA (notebook)
+
+Abra o notebook no Jupyter ou no VS Code e execute as células em ordem:
+
+```bash
+jupyter notebook eda/eda.ipynb
+```
+
+O notebook lê o dataset de `data/customer_support_tickets.csv` por caminho relativo, então execute-o a partir da pasta `eda/`, como o Jupyter já faz por padrão.
+
+### API
 
 A partir do diretório `fastapi/`:
 
@@ -111,7 +137,7 @@ Fluxo:
 
 A API é hospedada localmente em um Raspberry Pi 5 (Ubuntu Server), exposta publicamente via Cloudflare Tunnel.
 
-## Integrantes
+## Integrantes da Equipe
 
 - Cauã Henrique
 - Guilherme Reis
