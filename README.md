@@ -20,38 +20,54 @@ Desenvolver um sistema capaz de classificar a intenção de chamados de suporte 
 - **Fonte:** [Customer Support Ticket Dataset no Kaggle](https://www.kaggle.com/datasets/suraj520/customer-support-ticket-dataset/data), publicado por `suraj520`
 - **Conteúdo:** 8.469 chamados de suporte e 17 colunas com informações sobre clientes, produtos, chamados e atendimento.
 
-A fonte, as principais características e o motivo da escolha do dataset estão detalhados no início do notebook [`eda/eda.ipynb`](eda/eda.ipynb).
+A fonte, as principais características e o motivo da escolha do dataset estão detalhados no início do notebook [`eda/eda_tp3.ipynb`](eda/eda_tp3.ipynb).
 
 ## Estrutura de pastas
 
 ```
 .
+├── .github/
+│   └── workflows/
+│       ├── tests.yml                    # CI: execução automatizada da suíte pytest
+│       └── zap.yml                      # CI: scan passivo automatizado com OWASP ZAP
 ├── data/
 │   └── customer_support_tickets.csv     # dataset usado no EDA e na API
 ├── eda/
-│   └── eda.ipynb                        # análise exploratória completa
+│   ├── eda_tp3.ipynb                    # notebook com o EDA completo (TP1, TP2 e TP3)
+│   └── requirements.txt                 # dependências de data science para o notebook
 ├── fastapi/
 │   ├── main.py                          # ponto de entrada da aplicação
 │   ├── database.py                      # engine SQLModel e sessão (get_session)
 │   ├── database.db                      # banco SQLite (usuários e predictions)
-│   ├── sqlite_database.py               # criação e população inicial do banco (sqlite3)
+│   ├── sqlite_database.py               # criação do schema e população inicial (sqlite3)
+│   ├── sqlite_populate.py               # script dedicado para popular o banco SQLite
+│   ├── limiter.py                       # configuração do SlowAPI (anti brute-force)
 │   ├── requirements.txt                 # dependências da API
 │   ├── .env.example                     # modelo de variáveis de ambiente
 │   ├── Dockerfile                       # imagem da API
 │   ├── compose.yml                      # orquestração via Docker Compose
 │   ├── models/
-│   │   ├── schemas.py                   # modelos Pydantic (request/response)
+│   │   ├── schemas.py                   # modelos Pydantic com extra='forbid'
 │   │   └── tables.py                    # tabelas SQLModel (User, Prediction)
 │   ├── routes/
 │   │   ├── health.py                    # GET /health
-│   │   ├── auth.py                      # POST /auth/token
-│   │   └── predict.py                   # POST /predict, GET /predict e GET /predict/{id} (protegidas)
-│   └── security/
-│       ├── auth.py                      # JWT, OAuth2PasswordBearer, autenticação via banco
-│       └── headers.py                   # headers de segurança HTTP via middleware (OWASP Top 10)
+│   │   ├── auth.py                      # POST /auth/token (com SlowAPI rate limiter)
+│   │   └── predict.py                   # rotas de predição protegidas (com mitigação BOLA)
+│   ├── security/
+│   │   ├── auth.py                      # JWT, OAuth2PasswordBearer, autenticação via banco
+│   │   └── headers.py                   # headers de segurança HTTP e CSP do Swagger UI
+│   └── tests/                           # testes automatizados pytest
+│       └── test_security.py             # 12 cenários de autenticação, BOLA, rate limit e schema
 ├── others/
 │   ├── dfd.drawio.png                   # diagrama de fluxo de dados
-│   └── dfd.drawio                       # arquivo fonte do diagrama
+│   ├── dfd.drawio                       # arquivo fonte do diagrama
+│   ├── planejamento_tp3.md              # planejamento do modelo ML e pentest adversarial (TP3)
+│   └── planejamento.md                  # alias do documento de planejamento
+├── tests -> fastapi/tests               # atalho para execução de testes na raiz
+├── zap/
+│   ├── zap_report.html                  # relatório HTML da auditoria OWASP ZAP
+│   ├── zap_report.json                  # relatório JSON estruturado do ZAP
+│   └── scan_passivo_zap_TP3.md          # documentação analítica dos findings do ZAP
 ├── .gitignore
 └── README.md
 ```
@@ -82,10 +98,54 @@ cp .env.example .env
 Abra o notebook no Jupyter ou no VS Code e execute as células em ordem:
 
 ```bash
-jupyter notebook eda/eda.ipynb
+jupyter notebook eda/eda_tp3.ipynb
 ```
 
 O notebook lê o dataset de `data/customer_support_tickets.csv` por caminho relativo, então execute-o a partir da pasta `eda/`, como o Jupyter já faz por padrão.
+
+### Banco de Dados SQLite (Criação e População)
+
+A partir do diretório `fastapi/`:
+
+```bash
+# 1. Criação do schema e população inicial (recria database.db)
+python sqlite_database.py
+
+# 2. População dedicada do banco de dados (reinserção determinística)
+python sqlite_populate.py
+```
+
+### Execução dos Testes Automatizados (pytest)
+
+A suíte de testes de segurança cobre autenticação válida/inválida, prevenção a BOLA (404), validação estrita com `extra='forbid'`, bloqueio por rate limiting (429) e integridade de rotas protegidas.
+
+```bash
+# Execução a partir da raiz do repositório:
+pytest tests/ -v
+
+# Ou a partir da pasta fastapi/:
+cd fastapi
+pytest tests/ -v
+```
+
+### Auditoria de Segurança com OWASP ZAP
+
+A API foi auditada via scan passivo com o contêiner oficial do OWASP ZAP:
+
+```bash
+# Com a API rodando em http://localhost:8000:
+docker run --rm --network host \
+  -v "$PWD/zap:/zap/wrk:rw" \
+  zaproxy/zap-stable:latest zap-api-scan.py \
+  -t http://localhost:8000/openapi.json -f openapi \
+  -S -I -r zap_report.html -J zap_report.json
+```
+
+O relatório consolidado com **zero findings Medium ou High** e a análise detalhada de mitigações estão disponíveis em [`zap/scan_passivo_zap_TP3.md`](zap/scan_passivo_zap_TP3.md).
+
+### Planejamento da Próxima Etapa (TP4/TP5)
+
+O documento de transição contendo o modelo candidato (Regressão Logística), técnica de vetorização (`CountVectorizer`) e os alvos autorizados para testes de invasão e pentest adversarial está formalizado em [`others/planejamento_tp3.md`](others/planejamento_tp3.md).
 
 ### API
 

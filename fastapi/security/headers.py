@@ -10,10 +10,11 @@ from fastapi.responses import HTMLResponse
 API_CSP = "default-src 'none'; frame-ancestors 'none'"
 
 SECURITY_HEADERS = {
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",  # anti-clickjacking
-    "Referrer-Policy": "no-referrer",
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",            # Mitiga MIME-Sniffing (OWASP ZAP [10021])
+    "X-Frame-Options": "DENY",                      # Mitiga Clickjacking (OWASP ZAP [10020])
+    "Referrer-Policy": "no-referrer",               # Mitiga vazamento via Referer (OWASP ZAP [10025])
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",  # HSTS (OWASP ZAP [10035])
+    "Cross-Origin-Resource-Policy": "same-origin",  # Mitiga side-channel / CORP (OWASP ZAP [90004])
 }
 
 

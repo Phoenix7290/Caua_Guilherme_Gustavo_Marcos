@@ -33,9 +33,11 @@ def _classify(text: str):
 @router.post(
     "",
     response_model=PredictResponse,
+    summary="Classificar Intenção do Ticket",
     responses={
-        401: {"description": "Não autenticado"},
-        422: {"description": "Erro de validação (ex: campos não permitidos no corpo)"},
+        200: {"description": "Intenção classificada e persistida com sucesso para o usuário autenticado."},
+        401: {"description": "Não autenticado ou token JWT ausente/inválido."},
+        422: {"description": "Erro de validação (ex.: corpo vazio, tipo inválido ou campos adicionais rejeitados por extra='forbid')."},
     },
 )
 def predict(
@@ -44,8 +46,11 @@ def predict(
     session: Session = Depends(get_session),
 ):
     """
-    Classifica a intenção do ticket e salva o registro associado ao owner_id do usuário autenticado.
-    Rejeita campos extras no body graças a extra='forbid' no schema PredictRequest.
+    Classifica a intenção da mensagem e persiste a predição associada ao `owner_id` do usuário autenticado.
+
+    - **Autenticação**: obrigatória via Header `Authorization: Bearer <token>`.
+    - **Validação Estrita**: campos extras no JSON são estritamente rejeitados com HTTP 422 (`extra='forbid'`).
+    - **Prevenção de BOLA**: o `owner_id` é extraído diretamente do token validado, impedindo falsificação de propriedade.
     """
     intent, confidence = _classify(body.text)
     prediction = Prediction(
@@ -68,22 +73,33 @@ def predict(
 @router.get(
     "",
     response_model=list[PredictionRead],
-    responses={401: {"description": "Não autenticado"}},
+    summary="Listar Predições do Usuário Autenticado",
+    responses={
+        200: {"description": "Lista de predições pertencentes ao usuário autenticado."},
+        401: {"description": "Não autenticado ou token JWT ausente/inválido."},
+    },
 )
 def list_predictions(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    """Lista apenas as predições de posse do usuário autenticado."""
+    """
+    Retorna a lista de predições pertencentes exclusivamente ao usuário autenticado.
+
+    - **Autenticação**: obrigatória via Header `Authorization: Bearer <token>`.
+    - **Isolamento Multitenant**: filtra explicitamente por `Prediction.owner_id == current_user.id`.
+    """
     return session.exec(select(Prediction).where(Prediction.owner_id == current_user.id)).all()
 
 
 @router.get(
     "/{prediction_id}",
     response_model=PredictionRead,
+    summary="Consultar Predição por ID",
     responses={
-        401: {"description": "Não autenticado"},
-        404: {"description": "Predição não encontrada (ID inexistente ou pertence a outro usuário)"},
+        200: {"description": "Predição localizada e pertencente ao usuário solicitante."},
+        401: {"description": "Não autenticado ou token JWT ausente/inválido."},
+        404: {"description": "Predição não encontrada (ID inexistente ou pertencente a outro usuário - Mitigação BOLA)."},
     },
 )
 def get_prediction(
@@ -92,12 +108,13 @@ def get_prediction(
     session: Session = Depends(get_session),
 ):
     """
-    Retorna uma predição por ID do usuário autenticado.
+    Retorna uma predição específica por ID caso ela pertença ao usuário autenticado.
 
-    Mitigação de BOLA (Broken Object Level Authorization - OWASP Top 10):
-    Valida se o recurso pertence ao usuário autenticado (prediction.owner_id == current_user.id).
-    Caso o ID não exista ou pertença a outro usuário, a API não retorna o recurso e responde com
-    404 (Not Found) para evitar enumeração de recursos e vazamento de metadados.
+    - **Autenticação**: obrigatória via Header `Authorization: Bearer <token>`.
+    - **Mitigação BOLA (Broken Object Level Authorization - OWASP Top 10)**:
+      Valida se `prediction.owner_id == current_user.id`. Se o ID não existir ou pertencer
+      a outro usuário, responde uniformemente com **HTTP 404 (Not Found)** para evitar
+      enumeração de recursos (Resource Enumeration / IDOR).
     """
     prediction = session.get(Prediction, prediction_id)
     if prediction is None or prediction.owner_id != current_user.id:

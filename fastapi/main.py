@@ -19,12 +19,28 @@ app = FastAPI(
     redoc_url=None,  # ReDoc removido: exige CSP frouxa (unsafe-inline) e não é usado
 )
 
+# ── Configuração de CORS com Allowlist Explícita (Sem Wildcard "*") ────────
+# Corrige risco de Cross-Domain Misconfiguration (OWASP ZAP [10098]) e atende
+# ao controle de allowlist explícita de origens exigido no TP2/TP3.
+DEFAULT_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:3000",
+    "https://supportdesk-api.marcosryan.com",
+]
+
+env_origins = os.getenv("ALLOWED_ORIGINS")
+if env_origins:
+    allowed_origins = [o.strip() for o in env_origins.split(",") if o.strip()]
+else:
+    allowed_origins = DEFAULT_ALLOWED_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 app.state.limiter = limiter

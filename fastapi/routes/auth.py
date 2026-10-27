@@ -18,9 +18,12 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.post(
     "/token",
     response_model=TokenResponse,
+    summary="Autenticação e Obtenção de Token JWT",
     responses={
-        401: {"description": "Usuário ou senha incorretos"},
-        429: {"description": "Muitas tentativas de login. Tente novamente mais tarde."},
+        200: {"description": "Autenticação bem-sucedida, retorna o token de acesso Bearer."},
+        401: {"description": "Credenciais inválidas (usuário ou senha incorretos)."},
+        422: {"description": "Dados de requisição inválidos ou campos ausentes."},
+        429: {"description": "Muitas tentativas de login. Limite de requisições excedido (10 req/min)."},
     },
 )
 @limiter.limit(AUTH_RATE_LIMIT)  # anti brute force: 10 req/min por cliente
@@ -29,6 +32,13 @@ def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
 ):
+    """
+    Autentica o usuário via OAuth2 Password Flow e emite um JWT assinado com HS256.
+
+    - **Entrada**: formulário `multipart/form-data` ou `application/x-www-form-urlencoded` com `username` e `password`.
+    - **Proteção Anti-Brute-Force**: limitado a 10 requisições por minuto por cliente (SlowAPI).
+    - **Retorno**: token Bearer para uso nas rotas protegidas (`Authorization: Bearer <token>`).
+    """
     if not authenticate_user(session, form_data.username, form_data.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
