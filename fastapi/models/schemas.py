@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
 
@@ -10,7 +10,7 @@ class TokenResponse(BaseModel):
 class PredictRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    text: str
+    text: str = Field(min_length=1, max_length=2000)
 
 
 class PredictResponse(BaseModel):

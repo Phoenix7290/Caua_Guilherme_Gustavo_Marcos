@@ -181,4 +181,24 @@ def test_rate_limit_no_login_bloqueia_com_429(ctx):
 
 
     r = client.post("/auth/token", data={"username": "alice", "password": "senha"})
+
+
+def test_texto_vazio_ou_muito_longo_retorna_422(ctx):
+    client, _, _ = ctx
+    for payload in [{"text": ""}, {"text": "a" * 2001}]:
+        r = client.post("/predict", headers=_auth("alice"), json=payload)
+        assert r.status_code == 422
+
+
+def test_rate_limit_no_predict_bloqueia_com_429(ctx):
+    from limiter import PREDICT_RATE_LIMIT
+
+    client, _, _ = ctx
+    limite = int(PREDICT_RATE_LIMIT.split("/")[0])
+    headers = _auth("alice")
+    for i in range(limite):
+        r = client.post("/predict", headers=headers, json={"text": "Quero reembolso"})
+        assert r.status_code == 200, f"requisição {i + 1} deveria passar pelo limiter"
+
+    r = client.post("/predict", headers=headers, json={"text": "Quero reembolso"})
     assert r.status_code == 429

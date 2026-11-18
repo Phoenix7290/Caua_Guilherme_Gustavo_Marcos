@@ -1,8 +1,9 @@
 import re
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlmodel import Session, select
 
 from database import get_session
+from limiter import PREDICT_RATE_LIMIT, limiter
 from models.schemas import PredictRequest, PredictResponse, PredictionRead
 from models.tables import Prediction, User
 from security.auth import get_current_user
@@ -38,9 +39,12 @@ def _classify(text: str):
         200: {"description": "Intenção classificada e persistida com sucesso para o usuário autenticado."},
         401: {"description": "Não autenticado ou token JWT ausente/inválido."},
         422: {"description": "Erro de validação (ex.: corpo vazio, tipo inválido ou campos adicionais rejeitados por extra='forbid')."},
+        429: {"description": "Limite de requisições excedido (30 req/min)."},
     },
 )
+@limiter.limit(PREDICT_RATE_LIMIT)
 def predict(
+    request: Request,
     body: PredictRequest,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -77,9 +81,14 @@ def predict(
     responses={
         200: {"description": "Lista de predições pertencentes ao usuário autenticado."},
         401: {"description": "Não autenticado ou token JWT ausente/inválido."},
+        429: {"description": "Limite de requisições excedido (30 req/min)."},
     },
 )
+@limiter.limit(PREDICT_RATE_LIMIT)
 def list_predictions(
+    request: Request,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -89,7 +98,12 @@ def list_predictions(
     - **Autenticação**: obrigatória via Header `Authorization: Bearer <token>`.
     - **Isolamento Multitenant**: filtra explicitamente por `Prediction.owner_id == current_user.id`.
     """
-    return session.exec(select(Prediction).where(Prediction.owner_id == current_user.id)).all()
+    return session.exec(
+        select(Prediction)
+        .where(Prediction.owner_id == current_user.id)
+        .offset(offset)
+        .limit(limit)
+    ).all()
 
 
 @router.get(
@@ -100,9 +114,12 @@ def list_predictions(
         200: {"description": "Predição localizada e pertencente ao usuário solicitante."},
         401: {"description": "Não autenticado ou token JWT ausente/inválido."},
         404: {"description": "Predição não encontrada (ID inexistente ou pertencente a outro usuário - Mitigação BOLA)."},
+        429: {"description": "Limite de requisições excedido (30 req/min)."},
     },
 )
+@limiter.limit(PREDICT_RATE_LIMIT)
 def get_prediction(
+    request: Request,
     prediction_id: int,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),

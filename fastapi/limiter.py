@@ -19,3 +19,4 @@ def client_key(request: Request) -> str:
 limiter = Limiter(key_func=client_key)
 
 AUTH_RATE_LIMIT = "10/minute"
+PREDICT_RATE_LIMIT = "30/minute"
