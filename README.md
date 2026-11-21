@@ -10,7 +10,7 @@ Desenvolver um sistema capaz de classificar a intenção de chamados de suporte 
 
 - Análise exploratória: compreensão do problema e do dataset, inspeção inicial, verificação da qualidade, limpeza, preparação e análise univariada.
 - Formulação de hipóteses sobre as intenções dos usuários a partir das distribuições observadas.
-- API FastAPI modular com as rotas `GET /health`, `POST /auth/token` e `POST /predict`.
+- API FastAPI modular com as rotas `GET /health`, `POST /auth/token`, `POST /predict` e `POST /classify`.
 - Autenticação JWT com `OAuth2PasswordBearer` e proteção da rota de predição.
 - Diagrama de fluxo de dados com entradas, saídas e limites de confiança, acompanhado da análise de confidencialidade, integridade e disponibilidade.
 
@@ -33,7 +33,7 @@ A fonte, as principais características e o motivo da escolha do dataset estão 
 ├── data/
 │   └── customer_support_tickets.csv     # dataset usado no EDA e na API
 ├── eda/
-│   ├── eda_tp3.ipynb                    # notebook com o EDA completo (TP1, TP2 e TP3)
+│   ├── eda_tp3.ipynb                    # notebook com o EDA completo (TP1 a TP3) e o classificador de intenções (TP4)
 │   └── requirements.txt                 # dependências de data science para o notebook
 ├── fastapi/
 │   ├── main.py                          # ponto de entrada da aplicação
@@ -52,7 +52,11 @@ A fonte, as principais características e o motivo da escolha do dataset estão 
 │   ├── routes/
 │   │   ├── health.py                    # GET /health
 │   │   ├── auth.py                      # POST /auth/token (com SlowAPI rate limiter)
-│   │   └── predict.py                   # rotas de predição protegidas (com mitigação BOLA)
+│   │   ├── predict.py                   # rotas de predição protegidas (com mitigação BOLA)
+│   │   └── classify.py                  # POST /classify (modelo de ML, JWT, stateless)
+│   ├── ml/
+│   │   ├── model.py                     # loader lazy do classificador serializado
+│   │   └── intent_classifier.joblib     # Pipeline TF-IDF + LogisticRegression treinado
 │   ├── security/
 │   │   ├── auth.py                      # JWT, OAuth2PasswordBearer, autenticação via banco
 │   │   └── headers.py                   # headers de segurança HTTP e CSP do Swagger UI
@@ -245,6 +249,7 @@ Fluxo:
 | GET | `/health` | Não | Verifica se a API está ativa |
 | POST | `/auth/token` | Não | Autentica um usuário do banco e retorna um JWT |
 | POST | `/predict` | Sim (Bearer JWT) | Recebe o texto de um chamado e retorna uma intenção classificada (regra fixa; modelo de ML será implementado em etapa futura) e salva a predição para o usuário autenticado |
+| POST | `/classify` | Sim (Bearer JWT) | Recebe o texto de um chamado, aplica o modelo de ML treinado (TF-IDF + LogisticRegression) e retorna a intenção prevista com a probabilidade (stateless, não persiste) |
 | GET | `/predict` | Sim (Bearer JWT) | Lista somente as predições do usuário autenticado |
 | GET | `/predict/{id}` | Sim (Bearer JWT) | Retorna uma predição do usuário autenticado (`404` se não existir ou pertencer a outro usuário) |
 
