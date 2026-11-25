@@ -75,9 +75,17 @@ class SupportDeskConfig:
             username=os.getenv("SUPPORTDESK_API_USERNAME") or None,
             password=os.getenv("SUPPORTDESK_API_PASSWORD") or None,
             jwt_token=os.getenv("SUPPORTDESK_JWT_TOKEN") or None,
-            groq_api_key=os.getenv("GROQ_API_KEY") or None,
-            groq_base_url=os.getenv("GROQ_BASE_URL", DEFAULT_GROQ_BASE_URL).rstrip("/"),
-            groq_model=os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL),
+            groq_api_key=os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY") or None,
+            groq_base_url=(
+                os.getenv("LLM_BASE_URL")
+                or os.getenv("GROQ_BASE_URL")
+                or DEFAULT_GROQ_BASE_URL
+            ).rstrip("/"),
+            groq_model=(
+                os.getenv("LLM_MODEL")
+                or os.getenv("GROQ_MODEL")
+                or DEFAULT_GROQ_MODEL
+            ),
         )
 
 
@@ -224,11 +232,12 @@ def build_groq_model(
     model_name: str = DEFAULT_GROQ_MODEL,
     base_url: str = DEFAULT_GROQ_BASE_URL,
 ) -> OpenAIChatCompletionsModel:
-    """Configura o modelo Groq compatível com OpenAI para o OpenAI Agents SDK."""
-    resolved_key = api_key or os.getenv("GROQ_API_KEY")
+    """Configura provedor compatível com OpenAI (Groq, Ollama, etc.) para o Agents SDK."""
+    resolved_key = api_key or os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY")
     if not resolved_key:
         raise RuntimeError(
-            "GROQ_API_KEY não configurada. Defina a variável de ambiente ou no arquivo agent/.env."
+            "Chave de LLM não configurada. Defina LLM_API_KEY/GROQ_API_KEY no ambiente ou em agent/.env "
+            "(para Ollama local, use LLM_API_KEY='ollama' e LLM_BASE_URL='http://localhost:11434/v1')."
         )
 
     # Desabilita o envio de traces para a OpenAI quando usando chave Groq.

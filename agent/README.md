@@ -8,8 +8,9 @@ Agente de atendimento ao cliente implementado com **OpenAI Agents SDK** (`Agent`
   - `CUSTOMER_SUPPORT_SYSTEM_PROMPT`: define o papel de atendimento ao cliente, obriga a classificação prévia via ferramenta e orienta o tratamento das 5 intenções (`Refund Request`, `Technical Issue`, `Cancellation Request`, `Product Inquiry`, `Billing Inquiry`), além de pedir esclarecimento quando `probability < 0.50`.
   - `SupportDeskClient`: cliente HTTP assíncrono que autentica em `POST /auth/token`, mantém o JWT em cache dentro da validade (evitando atingir o rate limit de `10 req/min` do login) e renova automaticamente caso receba `HTTP 401`.
   - `classify_customer_intent` (`@function_tool`): envia o texto do usuário para `POST /classify` com `Authorization: Bearer <token>` e devolve `{"intent", "probability"}`.
-  - `build_groq_model`: instancia `AsyncOpenAI(base_url="https://api.groq.com/openai/v1")` + `OpenAIChatCompletionsModel(model="openai/gpt-oss-20b")` e desabilita o tracing para a OpenAI (`set_tracing_disabled(True)`).
+  - `build_groq_model`: instancia `AsyncOpenAI` (`GROQ_BASE_URL` / `LLM_BASE_URL`) + `OpenAIChatCompletionsModel` (padrão `openai/gpt-oss-20b` na Groq, ou modelo local no Ollama via `LLM_*`) e desabilita o tracing para a OpenAI (`set_tracing_disabled(True)`).
 - [`demo_3_turns.py`](demo_3_turns.py): executa uma conversa contínua de **3 turnos** com `Runner.run` preservando o histórico via `result.to_input_list()`.
+- [`conversa_3_turnos.md`](conversa_3_turnos.md): transcrição executada ao vivo dos 3 turnos chamando a API em produção (`https://supportdesk-api.marcosryan.com/classify`).
 
 ## Configuração e execução
 
@@ -19,7 +20,7 @@ Agente de atendimento ao cliente implementado com **OpenAI Agents SDK** (`Agent`
 pip install -r agent/requirements.txt
 ```
 
-2. Crie `agent/.env` a partir de [`agent/.env.example`](.env.example) e preencha `GROQ_API_KEY` e as credenciais da API (`SUPPORTDESK_API_USERNAME` / `SUPPORTDESK_API_PASSWORD`):
+2. Crie `agent/.env` a partir de [`agent/.env.example`](.env.example) e preencha `GROQ_API_KEY` (ou `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL` para usar Ollama local) e as credenciais da API (`SUPPORTDESK_API_USERNAME` / `SUPPORTDESK_API_PASSWORD`):
 
 ```bash
 cp agent/.env.example agent/.env

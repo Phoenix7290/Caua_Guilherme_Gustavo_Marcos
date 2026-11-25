@@ -32,8 +32,9 @@ A fonte, as principais características e o motivo da escolha do dataset estão 
 │       └── zap.yml                      # CI: scan passivo automatizado com OWASP ZAP
 ├── agent/
 │   ├── __init__.py
-│   ├── support_agent.py                 # Agente OpenAI Agents SDK + Groq + tool /classify
+│   ├── support_agent.py                 # Agente OpenAI Agents SDK + Groq/LLM + tool /classify
 │   ├── demo_3_turns.py                  # Demonstração de conversa com 3 turnos (Runner.run)
+│   ├── conversa_3_turnos.md             # Transcrição documentada da conversa de 3 turnos
 │   ├── requirements.txt                 # Dependências do agente (openai-agents, httpx)
 │   ├── .env.example                     # Modelo de variáveis de ambiente (GROQ_API_KEY, API)
 │   ├── README.md                        # Documentação e guia de execução do agente
