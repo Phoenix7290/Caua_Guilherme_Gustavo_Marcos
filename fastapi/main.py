@@ -10,6 +10,7 @@ from security.headers import install_docs, install_security_headers
 from routes.auth import router as auth_router
 from routes.health import router as health_router
 from routes.predict import router as predict_router
+from routes.classify import router as classify_router
 
 app = FastAPI(
     title="Customer Support Intent API",
@@ -52,6 +53,7 @@ install_docs(app)
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(predict_router)
+app.include_router(classify_router)
 
 if __name__ == "__main__":
     import uvicorn

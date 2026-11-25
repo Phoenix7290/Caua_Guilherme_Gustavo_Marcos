@@ -20,6 +20,17 @@ class PredictResponse(BaseModel):
     message: str
 
 
+class ClassifyRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class ClassifyResponse(BaseModel):
+    intent: str
+    probability: float
+
+
 class PredictionRead(BaseModel):
     id: int
     text: str
