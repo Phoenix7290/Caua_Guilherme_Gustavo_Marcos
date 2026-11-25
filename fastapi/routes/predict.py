@@ -1,5 +1,5 @@
 import re
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
 from sqlmodel import Session, select
 
 from database import get_session
@@ -120,7 +120,7 @@ def list_predictions(
 @limiter.limit(PREDICT_RATE_LIMIT)
 def get_prediction(
     request: Request,
-    prediction_id: int,
+    prediction_id: int = Path(..., ge=1, le=9_223_372_036_854_775_807),
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):

@@ -26,7 +26,14 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return bcrypt.checkpw(plain.encode(), hashed.encode())
+    encoded = plain.encode("utf-8")
+    # bcrypt >= 4.2 lança ValueError acima de 72 bytes ou com byte NUL.
+    if len(encoded) > 72 or b"\x00" in encoded:
+        return False
+    try:
+        return bcrypt.checkpw(encoded, hashed.encode("utf-8"))
+    except ValueError:
+        return False
 
 
 def authenticate_user(session: Session, username: str, password: str) -> Optional[User]:

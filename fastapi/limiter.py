@@ -16,7 +16,8 @@ def client_key(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-limiter = Limiter(key_func=client_key)
-
+DEFAULT_RATE_LIMIT = "120/minute"
 AUTH_RATE_LIMIT = "10/minute"
 PREDICT_RATE_LIMIT = "30/minute"
+
+limiter = Limiter(key_func=client_key, default_limits=[DEFAULT_RATE_LIMIT])

@@ -202,3 +202,27 @@ def test_rate_limit_no_predict_bloqueia_com_429(ctx):
 
     r = client.post("/predict", headers=headers, json={"text": "Quero reembolso"})
     assert r.status_code == 429
+
+
+def test_login_senha_longa_ou_nul_nao_gera_500(ctx):
+    client, _, _ = ctx
+    for bad_pw in ["A" * 100, "abc\x00def"]:
+        r = client.post("/auth/token", data={"username": "alice", "password": bad_pw})
+        assert r.status_code == 401
+        assert r.json()["detail"] == "Usuário ou senha incorretos."
+
+
+def test_predict_id_fora_do_intervalo_retorna_422_sem_500(ctx):
+    client, _, _ = ctx
+    headers = _auth("alice")
+    for bad_id in ["0", "-1", "99999999999999999999"]:
+        r = client.get(f"/predict/{bad_id}", headers=headers)
+        assert r.status_code == 422
+
+
+def test_docs_desabilitado_em_producao():
+    from main import create_app
+
+    prod_client = TestClient(create_app(is_production=True))
+    assert prod_client.get("/docs").status_code == 404
+    assert prod_client.get("/openapi.json").status_code == 404
